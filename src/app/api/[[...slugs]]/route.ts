@@ -8,11 +8,21 @@ import { message, realtime } from "@/lib/realtime"
 const ROOM_TTL_SECONDS =60 * 10
 
 const rooms = new Elysia({ prefix: "/room" })
-  .post("/create", async () => {
+  .post("/create", async ({ cookie }) => {
     const roomId = nanoid()
+    const token = nanoid()
+
+    // Seat the creator immediately so a double page-load can't take both slots
+    cookie["x-auth-token"].set({
+      value: token,
+      path: "/",
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+    })
 
     await redis.hset(`meta:${roomId}`, {
-      connected: [],
+      connected: [token],
       createdAt: Date.now(),
     })
 
