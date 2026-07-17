@@ -104,31 +104,31 @@ const Page = () => {
   }
 
   return (
-    <main className="flex flex-col h-screen max-h-screen overflow-hidden">
-      <header className="border-b border-zinc-800 p-4 flex items-center justify-between bg-zinc-900/30">
+    <main className="flex flex-col h-screen max-h-screen overflow-hidden bg-night text-ink">
+      <header className="border-b border-line p-4 flex items-center justify-between bg-surface/40">
         <div className="flex items-center gap-4">
           <div className="flex flex-col">
-            <span className="text-xs text-zinc-500 uppercase">Room ID</span>
+            <span className="text-xs text-muted uppercase">Room ID</span>
             <div className="flex items-center gap-2">
-              <span className="font-bold text-green-500 truncate">{roomId.slice(0,10) + "..."}</span>
+              <span className="font-bold text-copper truncate">{roomId.slice(0,10) + "..."}</span>
               <button
                 onClick={copyLink}
-                className="text-[10px] bg-zinc-800 hover:bg-zinc-700 px-2 py-0.5 rounded text-zinc-400 hover:text-zinc-200 transition-colors"
+                className="text-[10px] bg-line hover:bg-line/80 px-2 py-0.5 rounded text-muted hover:text-sand transition-colors"
               >
                 {copyStatus}
               </button>
             </div>
           </div>
 
-          <div className="h-8 w-px bg-zinc-800" />
+          <div className="h-8 w-px bg-line" />
 
           <div className="flex flex-col">
-            <span className="text-xs text-zinc-500 uppercase">Self-Destruct</span>
+            <span className="text-xs text-muted uppercase">Self-Destruct</span>
             <span
               className={`text-sm font-bold flex items-center gap-2 ${
                 timeRemaining !== null && timeRemaining < 60
-                  ? "text-red-500"
-                  : "text-amber-500"
+                  ? "text-danger"
+                  : "text-sand"
               }`}
             >
               {timeRemaining !== null ? formatTimeRemaining(timeRemaining) : "--:--"}
@@ -138,7 +138,7 @@ const Page = () => {
 
         <button
           onClick={() => destroyRoom()}
-          className="text-xs bg-zinc-800 hover:bg-red-600 px-3 py-1.5 rounded text-zinc-400 hover:text-white font-bold transition-all group flex items-center gap-2 disabled:opacity-50"
+          className="text-xs bg-line hover:bg-danger px-3 py-1.5 rounded text-muted hover:text-ink font-bold transition-all group flex items-center gap-2 disabled:opacity-50"
         >
           <span className="group-hover:animate-pulse">💣</span>
           DESTROY NOW
@@ -149,7 +149,7 @@ const Page = () => {
       <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin">
         {messages?.messages.length === 0 && (
           <div className="flex items-center justify-center h-full">
-            <p className="text-zinc-600 text-sm font-mono">
+            <p className="text-dim text-sm font-mono">
               No messages yet, start the conversation.
             </p>
           </div>
@@ -161,18 +161,18 @@ const Page = () => {
               <div className="flex items-baseline gap-3 mb-1">
                 <span
                   className={`text-xs font-bold ${
-                    msg.sender === username ? "text-green-500" : "text-blue-500"
+                    msg.sender === username ? "text-copper" : "text-sky"
                   }`}
                 >
                   {msg.sender === username ? "YOU" : msg.sender}
                 </span>
 
-                <span className="text-[10px] text-zinc-600">
+                <span className="text-[10px] text-dim">
                   {format(msg.timestamp, "HH:mm")}
                 </span>
               </div>
 
-              <p className="text-sm text-zinc-300 leading-relaxed break-all">
+              <p className="text-sm text-ink/80 leading-relaxed break-all">
                 {msg.text}
               </p>
             </div>
@@ -180,10 +180,10 @@ const Page = () => {
         ))}
       </div>
 
-      <div className="p-4 border-t border-zinc-800 bg-zinc-900/30">
+      <div className="p-4 border-t border-line bg-surface/40">
         <div className="flex gap-4">
           <div className="flex-1 relative group">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-green-500 animate-pulse">
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-copper animate-pulse">
               {">"}
             </span>
             <input
@@ -198,7 +198,7 @@ const Page = () => {
               }}
               placeholder="Type message..."
               onChange={(e) => setInput(e.target.value)}
-              className="w-full bg-black border border-zinc-800 focus:border-zinc-700 focus:outline-none transition-colors text-zinc-100 placeholder:text-zinc-700 py-3 pl-8 pr-4 text-sm"
+              className="w-full bg-night border border-line focus:border-copper/50 focus:outline-none transition-colors text-ink placeholder:text-dim py-3 pl-8 pr-4 text-sm"
             />
           </div>
 
@@ -208,7 +208,7 @@ const Page = () => {
               inputRef.current?.focus()
             }}
             disabled={!input.trim() || isPending}
-            className="bg-zinc-800 text-zinc-400 px-6 text-sm font-bold hover:text-zinc-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            className="bg-copper text-night px-6 text-sm font-bold hover:brightness-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
             SEND
           </button>
