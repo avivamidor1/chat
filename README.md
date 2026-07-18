@@ -2,13 +2,6 @@
 
 A private, two-person chat app where rooms expire automatically and messages can be destroyed on demand. Built as a full-stack showcase of realtime messaging, cookie-based access control, and serverless Redis.
 
-> **Resume / portfolio project** — demonstrates end-to-end product thinking: auth constraints, ephemeral data, live UX signals (typing), and a type-safe API surface.
-
-<!-- Optional: replace with your deployed URL after publish
-**Live demo:** [https://your-app.vercel.app](https://your-app.vercel.app)
--->
-
----
 
 ## Features
 
@@ -127,16 +120,8 @@ src/
 
 ---
 
-## What this project shows on a resume
 
-- Full-stack TypeScript with a typed HTTP client (Eden ↔ Elysia)
-- Realtime UX beyond CRUD (live messages + typing indicators)
-- Access control and concurrency concerns (2-seat rooms, join locks, cookies)
-- Ephemeral data modeling with Redis TTL and intentional teardown flows
-- Clean product constraints: private by design, no accounts required
 
 ---
 
-## License
 
-Personal / portfolio use. Add a license file if you open-source this publicly.
