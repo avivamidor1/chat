@@ -6,7 +6,7 @@ import { useRealtime } from "@/lib/realtime-client"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import { format } from "date-fns"
 import { useParams, useRouter } from "next/navigation"
-import { use, useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
 function formatTimeRemaining(seconds: number) {
   const mins = Math.floor(seconds / 60)
@@ -14,10 +14,11 @@ function formatTimeRemaining(seconds: number) {
   return `${mins}:${secs.toString().padStart(2, "0")}`
 }
 
+const TYPING_IDLE_MS = 2000
+
 const Page = () => {
   const params = useParams()
   const roomId = params.roomId as string
-
   const router = useRouter()
 
   const { username } = useUsername()
@@ -26,6 +27,49 @@ const Page = () => {
 
   const [copyStatus, setCopyStatus] = useState("COPY")
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null)
+  const [otherTyping, setOtherTyping] = useState<{
+    sender: string
+    isTyping: boolean
+  } | null>(null)
+
+  const typingIdleRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const lastTypingSentRef = useRef(false)
+
+  const stopTyping = () => {
+    if (typingIdleRef.current) {
+      clearTimeout(typingIdleRef.current)
+      typingIdleRef.current = null
+    }
+
+    if (!lastTypingSentRef.current || !username) return
+
+    lastTypingSentRef.current = false
+    void client.messages.typing.post(
+      { sender: username, isTyping: false },
+      { query: { roomId } }
+    )
+  }
+
+  const signalTyping = () => {
+    if (!username) return
+
+    if (!lastTypingSentRef.current) {
+      lastTypingSentRef.current = true
+      void client.messages.typing.post(
+        { sender: username, isTyping: true },
+        { query: { roomId } }
+      )
+    }
+
+    if (typingIdleRef.current) clearTimeout(typingIdleRef.current)
+    typingIdleRef.current = setTimeout(stopTyping, TYPING_IDLE_MS)
+  }
+
+  useEffect(() => {
+    return () => {
+      if (typingIdleRef.current) clearTimeout(typingIdleRef.current)
+    }
+  }, [])
 
   const { data: ttlData } = useQuery({
     queryKey: ["ttl", roomId],
@@ -70,22 +114,27 @@ const Page = () => {
 
   const { mutate: sendMessage, isPending } = useMutation({
     mutationFn: async ({ text }: { text: string }) => {
+      stopTyping()
       await client.messages.post({ sender: username, text }, { query: { roomId } })
-
       setInput("")
     },
   })
 
   useRealtime({
     channels: [roomId],
-    events: ["chat.message", "chat.destroy"],
-    onData: ({ event }) => {
+    events: ["chat.message", "chat.destroy", "chat.typing"],
+    onData: ({ event, data }) => {
       if (event === "chat.message") {
         refetch()
       }
 
       if (event === "chat.destroy") {
         router.push("/?destroyed=true")
+      }
+
+      if (event === "chat.typing") {
+        if (data.sender === username) return
+        setOtherTyping({ sender: data.sender, isTyping: data.isTyping })
       }
     },
   })
@@ -181,6 +230,14 @@ const Page = () => {
       </div>
 
       <div className="p-4 border-t border-line bg-surface/40">
+        <div className="h-5 mb-2">
+          {otherTyping?.isTyping && (
+            <p className="text-xs text-muted font-mono animate-pulse">
+              {otherTyping.sender} is typing...
+            </p>
+          )}
+        </div>
+
         <div className="flex gap-4">
           <div className="flex-1 relative group">
             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-copper animate-pulse">
@@ -190,6 +247,7 @@ const Page = () => {
               autoFocus
               type="text"
               value={input}
+              ref={inputRef}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && input.trim()) {
                   sendMessage({ text: input })
@@ -197,7 +255,16 @@ const Page = () => {
                 }
               }}
               placeholder="Type message..."
-              onChange={(e) => setInput(e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value
+                setInput(value)
+
+                if (value.length > 0) {
+                  signalTyping()
+                } else {
+                  stopTyping()
+                }
+              }}
               className="w-full bg-night border border-line focus:border-copper/50 focus:outline-none transition-colors text-ink placeholder:text-dim py-3 pl-8 pr-4 text-sm"
             />
           </div>

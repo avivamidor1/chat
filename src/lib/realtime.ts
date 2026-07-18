@@ -16,6 +16,10 @@ const message = z.object({
 const schema = {
   chat: {
     message,
+    typing: z.object({
+      sender: z.string(),
+      isTyping: z.boolean(),
+    }),
     destroy: z.object({
       isDestroyed: z.literal(true),
     }),

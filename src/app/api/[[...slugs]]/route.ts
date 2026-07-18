@@ -108,6 +108,26 @@ const messages = new Elysia({ prefix: "/messages" })
     },
     { query: z.object({ roomId: z.string() }) }
   )
+  .post(
+    "/typing",
+    async ({ body, auth }) => {
+      const { sender, isTyping } = body
+
+      await realtime.channel(auth.roomId).emit("chat.typing", {
+        sender,
+        isTyping,
+      })
+
+      return { ok: true }
+    },
+    {
+      query: z.object({ roomId: z.string() }),
+      body: z.object({
+        sender: z.string().max(100),
+        isTyping: z.boolean(),
+      }),
+    }
+  )
 
 const app = new Elysia({ prefix: "/api" }).use(rooms).use(messages)
 
